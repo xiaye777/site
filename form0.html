@@ -33,33 +33,7 @@
 			</tr>
 			<tr>
 				<td><p><span style="font-size:20px;"><span style="font-family:comic sans ms,cursive;">City</span></span></p></td>
-				<td>
-					<select id="mySelect">
-						<option value="option1">浙江</option>
-						<option value="option2">江苏</option>
-						<option value="custom">自定义</option>
-					</select>
-					<input type="text" id="customInput" style="display:none;">
-					<script>
-						const select = document.getElementById('mySelect');
-						const input = document.getElementById('customInput');
-
-						select.addEventListener('change', function () {
-							if (this.value === 'custom') {
-								input.style.display = 'inline-block';
-								input.focus();
-							} else {
-								input.style.display = 'none';
-								input.value = '';
-							}
-						});
-
-						input.addEventListener('input', function () {
-							// 这里可以添加逻辑，例如将输入的值作为新选项添加到select中
-							console.log('用户输入: ', this.value);
-						});
-					</script>
-				</td>
+				<td><p><select name="city" size="1"><option value="NingBo">NingBo</option><option value="HangZhou">HangZhou</option><option value="ShaoXin">ShaoXin</option></select></p></td>
 			</tr>
 			<tr>
 				<td><p><span style="font-size:20px;"><span style="font-family:comic sans ms,cursive;">Inter Experience</span></span></p></td>
