@@ -1,98 +1,49 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>Title</title>
-    </head>
-    <body>
-        <h2 >用户注册</h2>
-        <table border="0">
-          <tr>
-            <td>用户名称：</td>
-            <td>
-              <table border="1">
-                <tr>
-                  <td>zangsan&emsp;&emsp;&emsp;&emsp;&emsp;</td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <tr>
-            <td>用户密码：</td>
-            <td>
-              <table border="1">
-                <tr>
-                  <td>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;</td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <tr>
-            <td>用户性别：</td>
-            <td>●男&emsp;⚪女</td>
-          </tr>
-          <tr>
-            <td>爱好：</td>
-            <td>□足球&emsp;□篮球&emsp;□LOL&emsp;□韩剧&emsp;□王者荣耀</td>
-          </tr>
-          <tr>
-            <td>邮箱：</td>
-            <td>
-              <table border="1">
-                <tr>
-                  <td>
-                    请输入您的邮箱&emsp;&emsp;
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <tr>
-            <td>用户头像：</td>
-            <td>
-              <table border="1">
-                <tr>
-                  <td>
-                    选择文件
-                  </td>
-                </tr>
-              </table>
-              <table border="0">
-                <tr>
-                  <td>
-                    未选择文件
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <tr>
-            <td>你的家庭住址是：</td>
-            <td>
-              <table border="1">
-                <tr>
-                  <td>
-                    陕西
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <tr>
-            <td>您的建议或者意见</td>
-            <td>
-              <table border="1">
-                <tr>
-                  <td>
-                    您的建议或者意见
-                    <br>
-                    <br>
-                    <br>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
-    </body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>form1</title>
+</head>
+  <body>
+    <p><span style="font-family:comic sans ms,cursive;"><strong><span style="font-size:36px;">用户注册</span></strong></span></p>
+    <table border="0" cellpadding="1" cellspacing="1" style="width:700px;">
+      <tbody>
+        <tr>
+            <td><span style="font-family:comic sans ms,cursive;"><span style="font-size:36px;"><span style="font-size:22px;">用户名称：</span></span></span></td>
+            <td><input maxlength="15" name="username" type="text" value="zhang-san" /></td>
+        </tr>
+        <tr>
+          <td><span style="font-family:comic sans ms,cursive;"><span style="font-size:36px;"><span style="font-size:22px;">用户密码：</span></span></span></td>
+          <td><input maxlength="15" name="user-password" type="text" /></td>
+        </tr>
+        <tr>
+          <td><span style="font-family:comic sans ms,cursive;"><span style="font-size:36px;"><span style="font-size:22px;">用户性别：</span></span></span></td>
+          <td>
+            <input name="gender" id="1" type="radio" /><label for="1">男</label>
+            <input name="gender" id="2" type="radio" /><label for="2">女</label>
+          </td>
+        </tr>
+        <tr>
+          <td><span style="font-family:comic sans ms,cursive;"><span style="font-size:36px;"><span style="font-size:22px;">爱好：</span></span></span></td>
+          <td><input name="football" type="checkbox" />足球&nbsp;&nbsp;<input name="篮球" type="checkbox" />篮球&nbsp; &nbsp;<input name="LOL" type="checkbox" />LOL&nbsp; &nbsp;<input name="韩剧" type="checkbox" />韩剧&nbsp; &nbsp;<input name="王者" type="checkbox" />王者荣耀</td>
+        </tr>
+        <tr>
+          <td><span style="font-family:comic sans ms,cursive;"><span style="font-size:36px;"><span style="font-size:22px;">邮箱：</span></span></span></td>
+          <td><input maxlength="15" name="Emile" type="text" value="请输入您的邮箱" /></td>
+        </tr>
+        <tr>
+          <td><span style="font-family:comic sans ms,cursive;"><span style="font-size:36px;"><span style="font-size:22px;">用户头像：</span></span></span></td>
+          <td><input name="选择文件" type="button" value="选择文件" />&nbsp;<span style="font-size:14px;"><span style="font-family:tahoma,geneva,sans-serif;">未选择文件</span></span></td>
+        </tr>
+        <tr>
+          <td><span style="font-family:comic sans ms,cursive;"><span style="font-size:22px;">您的家庭住址是：</span></span></td>
+          <td><select name="city"><option value="陕西">陕西</option><option value="浙江">浙江</option><option value="上海">上海</option></select></td>
+        </tr>
+        <tr>
+          <td><span style="font-family:comic sans ms,cursive;"><span style="font-size:22px;">您的建议或者意见：</span></span></td>
+          <td><textarea cols="30" name="建议" rows="6">您的建议或者意见</textarea></td>
+        </tr>
+      </tbody>
+  </table>
+  </body>
 </html>
