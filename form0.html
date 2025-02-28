@@ -3,35 +3,73 @@
 
 <head>
     <meta charset="UTF-8">
+    <title>Table</title>
 </head>
 
 <body>
-    <select id="mySelect">
-        <option value="option1">浙江</option>
-        <option value="option2">江苏</option>
-        <option value="custom">自定义</option>
-    </select>
-    <input type="text" id="customInput" style="display:none;">
+	<p><span style="font-size:28px;"><span style="font-family:comic sans ms,cursive;">Student Information Form</span></span></p>
 
-    <script>
-        const select = document.getElementById('mySelect');
-        const input = document.getElementById('customInput');
+	<table align="center" border="0" cellpadding="1" cellspacing="1" style="width:100%;">
+		<tbody>
+			<tr>
+				<td><p><span style="font-size:28px;"><span style="font-family:comic sans ms,cursive;"><span style="font-size:20px;">Student Id</span></span></span></p></td>
+				<td><p><input maxlength="13" name="student-id" type="text" value="D10000000" /></p></td>
+			</tr>
+			<tr>
+				<td><p><span style="font-size:28px;"><span style="font-family:comic sans ms,cursive;"><span style="font-size:20px;">Name</span></span></span></p></td>
+				<td><p><input maxlength="50" name="name" type="text" value="e.g. John Smith" /></p></td>
+			</tr>
+			<tr>
+				<td><p><span style="font-size:28px;"><span style="font-family:comic sans ms,cursive;"><span style="font-size:20px;">Gender</span></span></span></p></td>
+				<td><p><input name="gender" type="radio" value="Male" /><span style="font-size:20px;"><span style="font-family:comic sans ms,cursive;">Male</span></span>&nbsp; &nbsp;<input name="gender" type="radio" value="Female" /><span style="font-size:20px;"><span style="font-family:comic sans ms,cursive;">Female</span></span></p></td>
+			</tr>
+			<tr>
+				<td><p><span style="font-size:20px;"><span style="font-family:comic sans ms,cursive;">Habits</span></span></p></td>
+				<td><p><input name="Pingpong" type="checkbox" value="1" /><span style="font-size:20px;"><span style="font-family:comic sans ms,cursive;">Swimming&nbsp;&nbsp;</span></span><input name="Pingpong" type="checkbox" value="1" /><span style="font-size:20px;"><span style="font-family:comic sans ms,cursive;">Pingpong&nbsp;&nbsp;</span></span><input name="Guitar" type="checkbox" value="1" />&nbsp;<span style="font-size:20px;"><span style="font-family:comic sans ms,cursive;">Guitar</span></span></p></td>
+			</tr>
+			<tr>
+				<td><p><span style="font-size:20px;"><span style="font-family:comic sans ms,cursive;">Major</span></span></p></td>
+				<td><p><select name="major" size="1"><option value="math">mathematics</option><option value="physics">physics</option><option value="bio">biology</option></select></p></td>
+			</tr>
+			<tr>
+				<td><p><span style="font-size:20px;"><span style="font-family:comic sans ms,cursive;">City</span></span></p></td>
+				<td>
+					<select id="mySelect">
+						<option value="option1">浙江</option>
+						<option value="option2">江苏</option>
+						<option value="custom">自定义</option>
+					</select>
+					<input type="text" id="customInput" style="display:none;">
+					<script>
+						const select = document.getElementById('mySelect');
+						const input = document.getElementById('customInput');
 
-        select.addEventListener('change', function () {
-            if (this.value === 'custom') {
-                input.style.display = 'inline-block';
-                input.focus();
-            } else {
-                input.style.display = 'none';
-                input.value = '';
-            }
-        });
+						select.addEventListener('change', function () {
+							if (this.value === 'custom') {
+								input.style.display = 'inline-block';
+								input.focus();
+							} else {
+								input.style.display = 'none';
+								input.value = '';
+							}
+						});
 
-        input.addEventListener('input', function () {
-            // 这里可以添加逻辑，例如将输入的值作为新选项添加到select中
-            console.log('用户输入: ', this.value);
-        });
-    </script>
+						input.addEventListener('input', function () {
+							// 这里可以添加逻辑，例如将输入的值作为新选项添加到select中
+							console.log('用户输入: ', this.value);
+						});
+					</script>
+				</td>
+			</tr>
+			<tr>
+				<td><p><span style="font-size:20px;"><span style="font-family:comic sans ms,cursive;">Inter Experience</span></span></p></td>
+				<td><p><span style="font-size:20px;"><span style="font-family:comic sans ms,cursive;"><textarea cols="50" name="intern" rows="6"></textarea></span></span></p></td>
+			</tr>
+			<tr>
+				<td><p><input name="submit" type="button" value="submit" /></p></td>
+			</tr>
+		</tbody>
+	</table>
 </body>
 
 </html>
