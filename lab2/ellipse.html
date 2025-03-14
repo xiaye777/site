@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            @keyframes gradientAnimation {
+                 0% {background: radial-gradient(circle at 0% 0%, #D8BFD8,ADD8E6);}
+                 30% {background: radial-gradient(circle at 30% 30%,  #FF3399,  #33E7FF);}
+                 50% {background: radial-gradient(circle at 50% 50%, #FF33E7,#4B0082);}
+                 100% {background: radial-gradient(circle at 100% 100%, #FF3399, #3399FF);}
+                                         }
+
+            .ellipse {
+                 width: 200px;
+                 height: 100px;
+                 border-radius: 100px / 50px;
+                 animation: gradientAnimation 5s infinite alternate;
+                      }
+        </style>
+    </head>
+    <body>
+        <div class="ellipse"></div>
+    </body>
+</html>
