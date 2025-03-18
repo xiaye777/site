@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>solver</title>
+</head>
+
+<body>
+    <script>
+        const a = prompt("请输入二次方程系数a(a > 0):");
+        const b = prompt("请输入二次方程系数b:");
+        const c = prompt("请输入二次方程系数c:");
+
+        const numA = parseFloat(a);
+        const numB = parseFloat(b);
+        const numC = parseFloat(c);
+
+        const delta = numB * numB - 4 * numA * numC;
+
+        const x1 = (-numB + Math.sqrt(delta)) / (2 * numA);
+        const x2 = (-numB - Math.sqrt(delta)) / (2 * numA);
+
+        alert(`第一个根x1是: ${x1}\n第二个根x2是: ${x2}`);
+
+        console.log(`第一个根x1是: ${x1}`);
+        console.log(`第二个根x2是: ${x2}`);
+    </script>
+</body>
+
+</html>
