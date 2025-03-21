@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Balloons Animation</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: lightblue;
+        }
+
+       .balloon {
+            position: absolute;
+            border-radius: 50%;
+            animation: flyUp 10s linear infinite;
+        }
+
+        @keyframes flyUp {
+            from {
+                bottom: -100px;
+            }
+            to {
+                bottom: 100vh;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        const numBalloons = 10;
+        const colors = ['pink', 'blue', 'green', 'yellow', 'purple', 'orange'];
+
+        for (let i = 0; i < numBalloons; i++) {
+            const balloon = document.createElement('div');
+            balloon.classList.add('balloon');
+            const size = Math.random() * 50 + 50;
+            balloon.style.width = `${size}px`;
+            balloon.style.height = `${size}px`;
+            balloon.style.left = `${Math.random() * 100}vw`;
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            balloon.style.backgroundColor = color;
+            balloon.style.animationDuration = `${Math.random() * 5 + 5}s`;
+
+            document.body.appendChild(balloon);
+
+            setInterval(() => {
+                const newSize = Math.random() * 50 + 50;
+                balloon.style.width = `${newSize}px`;
+                balloon.style.height = `${newSize}px`;
+                const newColor = colors[Math.floor(Math.random() * colors.length)];
+                balloon.style.backgroundColor = newColor;
+            }, Math.random() * 2000 + 1000);
+        }
+    </script>
+</body>
+
+</html>
+
