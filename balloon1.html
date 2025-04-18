@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: lightblue;
+    }
+
+    .balloon {
+      position: absolute;
+      border-radius: 50%;
+      animation: rise 10s linear forwards;
+    }
+
+    @keyframes rise {
+      to {
+        transform: translateY(-100vh);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<script>
+
+  function createBalloon() {
+    const balloon = document.createElement('div');
+    balloon.className = 'balloon';
+
+    const size = Math.random() * 50 + 20;  // 20-70px
+    const colors = ['pink', 'blue', 'green', 'yellow', 'purple', 'orange'];
+
+    balloon.style.width = size + 'px';
+    balloon.style.height = size + 'px';
+    balloon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    balloon.style.left = Math.random() * 100 + 'vw';
+    balloon.style.bottom = -size + 'px';
+
+    balloon.style.animationDuration = Math.random() * 5 + 3 + 's'; // 3-8秒
+
+    balloon.addEventListener('animationend', () => balloon.remove());
+
+    document.body.appendChild(balloon);
+  }
+
+
+  for (let i = 0; i < 30; i++) {
+    setTimeout(createBalloon, i * 300); // 每300ms创建一个
+  }
+</script>
+
+</body>
+</html>
