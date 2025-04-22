@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: lightblue;
+    }
+
+    .balloon {
+      position: absolute;
+      border-radius: 50%;
+      animation: rise 10s linear forwards;
+    }
+
+    @keyframes rise {
+      to {
+        transform: translateY(-100vh);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <script>
+    class Balloon {
+      constructor() {
+        this.balloon = document.createElement('div');
+        this.balloon.className = 'balloon';
+        this.setSize();
+        this.setColor();
+        this.setPosition();
+        this.setAnimationDuration();
+        this.addAnimationEndListener();
+        document.body.appendChild(this.balloon);
+      }
+
+      setSize() {
+        const size = Math.random() * 50 + 20; // 20 - 70px
+        this.balloon.style.width = size + 'px';
+        this.balloon.style.height = size + 'px';
+      }
+
+      setColor() {
+        const colors = ['pink', 'blue', 'green', 'yellow', 'purple', 'orange'];
+        this.balloon.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      }
+
+      setPosition() {
+        this.balloon.style.left = Math.random() * 100 + 'vw';
+        this.balloon.style.bottom = -parseFloat(this.balloon.style.width) + 'px';
+      }
+
+      setAnimationDuration() {
+        this.balloon.style.animationDuration = Math.random() * 5 + 3 + 's'; // 3 - 8 秒
+      }
+
+      addAnimationEndListener() {
+        this.balloon.addEventListener('animationend', () => this.balloon.remove());
+      }
+    }
+
+    for (let i = 0; i < 30; i++) {
+      setTimeout(() => new Balloon(), i * 300); // 每 300ms 创建一个
+    }
+  </script>
+</body>
+
+</html>
+    
