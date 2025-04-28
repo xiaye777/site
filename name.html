@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Name List</title>
+</head>
+
+<body>
+    <table id="nameTable">
+        <thead>
+            <tr>
+                <th>Last Name</th>
+                <th>First Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Zhou</td>
+                <td>Yufan</td>
+            </tr>
+            <tr>
+                <td>Zhu</td>
+                <td>Zhiqing</td>
+            </tr>
+            <tr>
+                <td>Zhuo</td>
+                <td>Yiyuan</td>
+            </tr>
+        </tbody>
+    </table>
+    <script>
+        window.onload = sortByFirstName;
+
+        function sortByFirstName() {
+            const tbl = document.getElementsByTagName('table')[0];
+            const rows = Array.from(tbl.rows).slice(1); // 跳过表头
+            rows.sort((a, b) => {
+                const firstnameA = a.cells[1].innerHTML;
+                const firstnameB = b.cells[1].innerHTML;
+                return firstnameA.localeCompare(firstnameB);
+            });
+            // 移除所有行
+            while (tbl.rows.length > 1) {
+                tbl.deleteRow(1);
+            }
+            // 将排序后的行添加回去
+            rows.forEach(row => {
+                tbl.appendChild(row);
+            });
+        }
+    </script>
+</body>
+
+</html>
