@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV表格查看器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#10B981',
+                        secondary: '#3B82F6',
+                        accent: '#F59E0B',
+                        dark: '#1F2937',
+                        light: '#F9FAFB'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-custom {
+                transition: all 0.3s ease;
+            }
+            .shadow-custom {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            }
+            .table-hover-effect tr:hover {
+                background-color: rgba(16, 185, 129, 0.05);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-inter text-dark min-h-screen flex flex-col">
+    <header class="bg-gradient-to-r from-primary to-secondary text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold tracking-tight">
+                <i class="fa fa-table mr-3"></i>CSV表格查看器
+            </h1>
+            <p class="mt-2 text-lg opacity-90">选择本地CSV文件并以表格形式查看</p>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-custom overflow-hidden transition-custom hover:shadow-xl">
+            <div class="p-6 md:p-8">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold mb-3 text-dark">选择CSV文件</h2>
+                    <p class="text-gray-600 mb-4">选择一个CSV文件，其内容将以表格形式显示</p>
+
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center transition-custom hover:border-primary mb-8">
+                        <input type="file" id="csvFileUpload" accept=".csv" class="hidden">
+                        <label for="csvFileUpload" class="cursor-pointer inline-block bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg transition-custom hover:shadow-lg transform hover:-translate-y-1">
+                            <i class="fa fa-file-text-o mr-2"></i>选择CSV文件
+                        </label>
+                        <p class="mt-3 text-gray-500">支持标准CSV格式文件</p>
+                    </div>
+
+                    <div id="csvInfo" class="hidden mb-6 p-4 bg-gray-50 rounded-lg">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-medium text-lg">文件信息</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2 text-sm">
+                                    <div><span class="text-gray-500">文件名:</span> <span id="csvFileName" class="font-medium"></span></div>
+                                    <div><span class="text-gray-500">大小:</span> <span id="csvFileSize" class="font-medium"></span></div>
+                                    <div><span class="text-gray-500">行数:</span> <span id="csvRowCount" class="font-medium"></span></div>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button id="downloadBtn" class="bg-secondary hover:bg-secondary/90 text-white px-4 py-2 rounded-lg transition-custom">
+                                    <i class="fa fa-download mr-1"></i> 导出表格
+                                </button>
+                                <button id="copyBtn" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-custom">
+                                    <i class="fa fa-copy mr-1"></i> 复制表格
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="csvTableContainer" class="overflow-x-auto hidden">
+                        <table id="csvTable" class="min-w-full divide-y divide-gray-200 table-hover-effect">
+                            <thead class="bg-gray-50">
+                                <tr id="tableHeader"></tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200" id="tableBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="emptyState" class="py-16 text-center text-gray-400">
+                        <i class="fa fa-file-text-o text-5xl mb-4"></i>
+                        <p class="text-lg">未选择CSV文件</p>
+                        <p class="text-sm mt-2">请点击上方按钮选择一个CSV文件开始查看</p>
+                    </div>
+
+                    <div id="loadingState" class="hidden py-16 text-center">
+                        <div class="w-12 h-12 border-4 border-gray-200 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+                        <p class="text-lg">正在处理文件...</p>
+                    </div>
+
+                    <div id="errorState" class="hidden py-16 text-center text-red-500">
+                        <i class="fa fa-exclamation-triangle text-5xl mb-4"></i>
+                        <p id="errorText" class="text-lg">无法处理文件</p>
+                        <p id="errorDetails" class="text-sm mt-2 text-gray-600"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-dark text-white py-6 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2025 CSV表格查看器 | 使用 Tailwind CSS 构建</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const csvFileUpload = document.getElementById('csvFileUpload');
+            const csvFileName = document.getElementById('csvFileName');
+            const csvFileSize = document.getElementById('csvFileSize');
+            const csvRowCount = document.getElementById('csvRowCount');
+            const csvInfo = document.getElementById('csvInfo');
+            const csvTableContainer = document.getElementById('csvTableContainer');
+            const tableHeader = document.getElementById('tableHeader');
+            const tableBody = document.getElementById('tableBody');
+            const emptyState = document.getElementById('emptyState');
+            const loadingState = document.getElementById('loadingState');
+            const errorState = document.getElementById('errorState');
+            const errorText = document.getElementById('errorText');
+            const errorDetails = document.getElementById('errorDetails');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const copyBtn = document.getElementById('copyBtn');
+
+            let csvData = null;
+
+            // 监听文件选择
+            csvFileUpload.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // 验证文件类型
+                const fileType = file.name.split('.').pop().toLowerCase();
+                if (fileType !== 'csv') {
+                    showError('请选择有效的CSV文件！', '文件扩展名应为.csv');
+                    return;
+                }
+
+                // 显示加载状态
+                showLoading();
+
+                // 读取并解析CSV文件
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const content = e.target.result;
+                        csvData = parseCSV(content);
+
+                        if (csvData && csvData.headers && csvData.rows.length > 0) {
+                            displayTable(csvData);
+
+                            // 更新文件信息
+                            csvFileName.textContent = file.name;
+                            csvFileSize.textContent = formatFileSize(file.size);
+                            csvRowCount.textContent = csvData.rows.length;
+
+                            // 显示表格和信息
+                            csvInfo.classList.remove('hidden');
+                            csvTableContainer.classList.remove('hidden');
+
+                            // 添加淡入动画
+                            csvTableContainer.classList.add('animate-fade-in');
+                            setTimeout(() => {
+                                csvTableContainer.classList.remove('animate-fade-in');
+                            }, 500);
+                        } else {
+                            showError('CSV文件格式不正确', '文件可能为空或格式不符合标准');
+                        }
+                    } catch (error) {
+                        showError('解析CSV文件时出错', error.message);
+                    }
+                };
+
+                reader.onerror = function() {
+                    showError('读取文件时出错', '请确保文件未损坏且格式正确');
+                };
+
+                reader.readAsText(file);
+            });
+
+            // 下载按钮
+            downloadBtn.addEventListener('click', function() {
+                if (csvData) {
+                    downloadCSV(csvData);
+                }
+            });
+
+            // 复制按钮
+            copyBtn.addEventListener('click', function() {
+                if (csvData) {
+                    copyTableToClipboard(csvData);
+                }
+            });
+
+            // 解析CSV内容
+            function parseCSV(content) {
+                // 按行分割
+                const lines = content.split(/\r\n|\n|\r/);
+
+                // 过滤空行
+                const validLines = lines.filter(line => line.trim().length > 0);
+
+                if (validLines.length === 0) {
+                    return null;
+                }
+
+                // 假设第一行为表头
+                const headers = validLines[0].split(',').map(header => header.trim());
+
+                // 解析数据行
+                const rows = [];
+                for (let i = 1; i < validLines.length; i++) {
+                    const values = validLines[i].split(',');
+
+                    // 创建对象，键为表头，值为对应列的数据
+                    const row = {};
+                    headers.forEach((header, index) => {
+                        row[header] = values[index] ? values[index].trim() : '';
+                    });
+
+                    rows.push(row);
+                }
+
+                return { headers, rows };
+            }
+
+            // 显示表格
+            function displayTable(data) {
+                // 清空表格
+                tableHeader.innerHTML = '';
+                tableBody.innerHTML = '';
+
+                // 添加表头
+                data.headers.forEach(header => {
+                    const th = document.createElement('th');
+                    th.scope = 'col';
+                    th.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                    th.textContent = header;
+                    tableHeader.appendChild(th);
+                });
+
+                // 添加数据行
+                data.rows.forEach((row, rowIndex) => {
+                    const tr = document.createElement('tr');
+                    tr.className = rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+
+                    data.headers.forEach(header => {
+                        const td = document.createElement('td');
+                        td.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500';
+                        td.textContent = row[header] || '';
+                        tr.appendChild(td);
+                    });
+
+                    tableBody.appendChild(tr);
+                });
+
+                // 隐藏空状态，显示表格
+                emptyState.classList.add('hidden');
+                errorState.classList.add('hidden');
+                loadingState.classList.add('hidden');
+            }
+
+            // 显示加载状态
+            function showLoading() {
+                emptyState.classList.add('hidden');
+                csvInfo.classList.add('hidden');
+                csvTableContainer.classList.add('hidden');
+                errorState.classList.add('hidden');
+                loadingState.classList.remove('hidden');
+            }
+
+            // 显示错误状态
+            function showError(text, details = '') {
+                errorText.textContent = text;
+                errorDetails.textContent = details;
+
+                emptyState.classList.add('hidden');
+                csvInfo.classList.add('hidden');
+                csvTableContainer.classList.add('hidden');
+                loadingState.classList.add('hidden');
+                errorState.classList.remove('hidden');
+            }
+
+            // 下载CSV文件
+            function downloadCSV(data) {
+                // 构建CSV内容
+                let csvContent = data.headers.join(',') + '\n';
+
+                data.rows.forEach(row => {
+                    const values = data.headers.map(header => row[header] || '');
+                    csvContent += values.join(',') + '\n';
+                });
+
+                // 创建下载链接
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'table_data.csv');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
+            // 复制表格到剪贴板
+            function copyTableToClipboard(data) {
+                // 构建表格内容
+                let tableContent = data.headers.join('\t') + '\n';
+
+                data.rows.forEach(row => {
+                    const values = data.headers.map(header => row[header] || '');
+                    tableContent += values.join('\t') + '\n';
+                });
+
+                // 复制到剪贴板
+                navigator.clipboard.writeText(tableContent)
+                    .then(() => {
+                        // 显示复制成功提示
+                        const originalText = copyBtn.innerHTML;
+                        copyBtn.innerHTML = '<i class="fa fa-check mr-1"></i> 已复制';
+                        copyBtn.classList.add('bg-green-600');
+
+                        setTimeout(() => {
+                            copyBtn.innerHTML = originalText;
+                            copyBtn.classList.remove('bg-green-600');
+                        }, 2000);
+                    })
+                    .catch(err => {
+                        console.error('无法复制内容: ', err);
+                        alert('复制失败，请手动复制');
+                    });
+            }
+
+            // 文件大小格式化
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+        });
+    </script>
+</body>
+</html>
