@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>点击坐标报告</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8B5CF6',
+                        secondary: '#EC4899',
+                        accent: '#3B82F6',
+                        dark: '#1F2937',
+                        light: '#F9FAFB'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-custom {
+                transition: all 0.3s ease;
+            }
+            .shadow-custom {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            }
+            .grid-pattern {
+                background-image: linear-gradient(#e5e7eb 1px, transparent 1px),
+                                linear-gradient(to right, #e5e7eb 1px, transparent 1px);
+                background-size: 20px 20px;
+            }
+            .coordinate-marker {
+                position: absolute;
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background-color: rgba(139, 92, 246, 0.8);
+                transform: translate(-50%, -50%);
+                z-index: 10;
+                animation: pulse 1.5s infinite;
+            }
+            @keyframes pulse {
+                0% {
+                    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4);
+                }
+                70% {
+                    box-shadow: 0 0 0 10px rgba(139, 92, 246, 0);
+                }
+                100% {
+                    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+                }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-inter text-dark min-h-screen flex flex-col">
+    <header class="bg-gradient-to-r from-primary to-secondary text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold tracking-tight">
+                <i class="fa fa-crosshairs mr-3"></i>点击坐标报告
+            </h1>
+            <p class="mt-2 text-lg opacity-90">点击下方区域查看坐标信息</p>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-xl shadow-custom overflow-hidden transition-custom hover:shadow-xl mb-8">
+                <div class="p-6 md:p-8">
+                    <h2 class="text-2xl font-bold mb-6 text-dark">交互式坐标区域</h2>
+
+                    <div class="bg-gray-100 p-4 rounded-lg mb-6">
+                        <p class="text-gray-700">点击下方网格区域中的任意位置，系统将显示该点的坐标信息。</p>
+                        <p class="text-gray-500 text-sm mt-1">坐标原点(0,0)位于区域左上角，X轴向右增长，Y轴向下增长。</p>
+                    </div>
+
+                    <div class="relative">
+                        <!-- 坐标显示区域 -->
+                        <div id="coordinateDisplay" class="bg-white border border-gray-200 rounded-lg p-4 mb-4 flex justify-between items-center">
+                            <div>
+                                <span class="text-gray-500">X坐标:</span>
+                                <span id="xCoordinate" class="font-medium ml-2">-</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500">Y坐标:</span>
+                                <span id="yCoordinate" class="font-medium ml-2">-</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500">区域尺寸:</span>
+                                <span id="areaSize" class="font-medium ml-2">-</span>
+                            </div>
+                        </div>
+
+                        <!-- 点击区域 -->
+                        <div id="clickArea" class="relative h-[400px] bg-gray-50 rounded-lg border border-gray-200 grid-pattern overflow-hidden cursor-crosshair">
+                            <div id="markerContainer" class="absolute inset-0"></div>
+
+                            <!-- 坐标原点标记 -->
+                            <div class="absolute top-0 left-0 p-2 bg-white/80 backdrop-blur-sm rounded-br-lg border-r border-b border-gray-200 text-xs font-medium">
+                                (0, 0)
+                            </div>
+
+                            <!-- 空状态提示 -->
+                            <div id="emptyClickState" class="absolute inset-0 flex items-center justify-center text-gray-400">
+                                <div class="text-center">
+                                    <i class="fa fa-mouse-pointer text-4xl mb-3"></i>
+                                    <p>点击此区域开始获取坐标</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex justify-between items-center">
+                        <div class="text-sm text-gray-500">
+                            <span id="clickCount">0</span> 次点击
+                        </div>
+                        <button id="clearMarkers" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition-custom">
+                            <i class="fa fa-eraser mr-1"></i> 清除标记
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-custom overflow-hidden transition-custom hover:shadow-xl">
+                <div class="p-6 md:p-8">
+                    <h2 class="text-2xl font-bold mb-6 text-dark">点击历史记录</h2>
+
+                    <div id="historyContainer" class="max-h-[200px] overflow-y-auto bg-gray-50 rounded-lg p-4">
+                        <div class="text-center text-gray-400" id="emptyHistory">
+                            暂无点击记录
+                        </div>
+                        <div id="clickHistory" class="space-y-2 hidden"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-dark text-white py-6 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2025 点击坐标报告 | 使用 Tailwind CSS 构建</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const clickArea = document.getElementById('clickArea');
+            const xCoordinate = document.getElementById('xCoordinate');
+            const yCoordinate = document.getElementById('yCoordinate');
+            const areaSize = document.getElementById('areaSize');
+            const clickCount = document.getElementById('clickCount');
+            const clearMarkers = document.getElementById('clearMarkers');
+            const markerContainer = document.getElementById('markerContainer');
+            const emptyClickState = document.getElementById('emptyClickState');
+            const clickHistory = document.getElementById('clickHistory');
+            const emptyHistory = document.getElementById('emptyHistory');
+
+            let clickCounter = 0;
+            let markers = [];
+
+            // 初始化区域尺寸显示
+            updateAreaSize();
+
+            // 监听窗口大小变化，更新区域尺寸
+            window.addEventListener('resize', updateAreaSize);
+
+            // 监听点击事件
+            clickArea.addEventListener('click', function(e) {
+                // 隐藏空状态提示
+                emptyClickState.classList.add('hidden');
+
+                // 获取相对于点击区域的坐标
+                const rect = clickArea.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                // 更新坐标显示
+                xCoordinate.textContent = Math.round(x);
+                yCoordinate.textContent = Math.round(y);
+
+                // 添加点击标记
+                addMarker(x, y);
+
+                // 添加到历史记录
+                addToHistory(x, y);
+
+                // 更新点击计数
+                clickCounter++;
+                clickCount.textContent = clickCounter;
+            });
+
+            // 清除标记按钮
+            clearMarkers.addEventListener('click', function() {
+                // 移除所有标记
+                markers.forEach(marker => marker.remove());
+                markers = [];
+
+                // 清空历史记录
+                clickHistory.innerHTML = '';
+                emptyHistory.classList.remove('hidden');
+                clickHistory.classList.add('hidden');
+
+                // 重置计数
+                clickCounter = 0;
+                clickCount.textContent = clickCounter;
+
+                // 显示空状态提示
+                emptyClickState.classList.remove('hidden');
+            });
+
+            // 添加点击标记
+            function addMarker(x, y) {
+                const marker = document.createElement('div');
+                marker.className = 'coordinate-marker';
+                marker.style.left = `${x}px`;
+                marker.style.top = `${y}px`;
+
+                // 添加标记到容器
+                markerContainer.appendChild(marker);
+                markers.push(marker);
+
+                // 添加数字标签
+                const label = document.createElement('div');
+                label.className = 'absolute -top-8 left-1/2 transform -translate-x-1/2 bg-primary text-white text-xs px-2 py-1 rounded whitespace-nowrap';
+                label.textContent = `(${Math.round(x)}, ${Math.round(y)})`;
+                marker.appendChild(label);
+
+                // 添加动画效果
+                marker.classList.add('animate-fade-in');
+                setTimeout(() => {
+                    marker.classList.remove('animate-fade-in');
+                }, 300);
+            }
+
+            // 添加到历史记录
+            function addToHistory(x, y) {
+                // 隐藏空历史提示
+                emptyHistory.classList.add('hidden');
+                clickHistory.classList.remove('hidden');
+
+                // 创建新的历史记录项
+                const historyItem = document.createElement('div');
+                historyItem.className = 'flex justify-between items-center p-2 border-b border-gray-200 last:border-0 bg-white rounded hover:bg-gray-50 transition-custom';
+
+                // 时间戳
+                const now = new Date();
+                const timeString = now.toLocaleTimeString();
+
+                // 设置内容
+                historyItem.innerHTML = `
+                    <div>
+                        <span class="font-medium">(${Math.round(x)}, ${Math.round(y)})</span>
+                        <span class="text-gray-500 text-xs ml-2">${timeString}</span>
+                    </div>
+                    <button class="delete-history text-gray-400 hover:text-red-500 transition-custom" data-index="${markers.length - 1}">
+                        <i class="fa fa-times"></i>
+                    </button>
+                `;
+
+                // 添加到历史记录容器
+                clickHistory.prepend(historyItem);
+
+                // 添加删除事件
+                historyItem.querySelector('.delete-history').addEventListener('click', function(e) {
+                    e.stopPropagation(); // 防止触发点击区域的点击事件
+
+                    const index = parseInt(this.getAttribute('data-index'));
+
+                    // 移除标记
+                    if (markers[index]) {
+                        markers[index].remove();
+                        markers.splice(index, 1);
+                    }
+
+                    // 移除历史记录项
+                    this.closest('.flex').remove();
+
+                    // 更新历史记录索引
+                    updateHistoryIndices();
+
+                    // 如果没有历史记录了，显示空历史提示
+                    if (clickHistory.children.length === 0) {
+                        emptyHistory.classList.remove('hidden');
+                        clickHistory.classList.add('hidden');
+                    }
+                });
+            }
+
+            // 更新历史记录索引
+            function updateHistoryIndices() {
+                const deleteButtons = document.querySelectorAll('.delete-history');
+                deleteButtons.forEach((button, index) => {
+                    button.setAttribute('data-index', markers.length - 1 - index);
+                });
+            }
+
+            // 更新区域尺寸显示
+            function updateAreaSize() {
+                const rect = clickArea.getBoundingClientRect();
+                areaSize.textContent = `${Math.round(rect.width)} × ${Math.round(rect.height)} px`;
+            }
+        });
+    </script>
+</body>
+</html>
