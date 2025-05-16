@@ -1,1 +1,297 @@
-my first page
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件处理和点击坐标演示</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#10b981',
+                        accent: '#8b5cf6',
+                        neutral: '#1f2937',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-custom {
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .shadow-custom {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-inter text-neutral">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <header class="mb-12 text-center">
+            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-neutral mb-4">文件处理和交互演示</h1>
+            <p class="text-gray-600 text-lg max-w-3xl mx-auto">
+                这个演示页面展示了如何处理不同类型的文件和捕获用户交互事件。
+                尝试上传不同类型的文件并查看效果，或点击坐标演示区域查看点击位置。
+            </p>
+        </header>
+
+        <main class="space-y-16">
+            <!-- 图片上传部分 -->
+            <section class="bg-white rounded-xl shadow-custom p-8 transition-custom hover:shadow-lg">
+                <h2 class="text-2xl font-bold text-primary mb-6 flex items-center">
+                    <i class="fa fa-image mr-3 text-2xl"></i>图片上传与显示
+                </h2>
+                <div class="space-y-6">
+                    <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                        <label for="imageUpload" class="cursor-pointer bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-custom flex items-center">
+                            <i class="fa fa-upload mr-2"></i>选择图片文件
+                        </label>
+                        <input type="file" id="imageUpload" accept="image/*" class="hidden" />
+                        <span id="imageFileName" class="text-gray-500 flex-grow"></span>
+                    </div>
+                    <div id="imageContainer" class="hidden bg-gray-100 rounded-lg p-4 min-h-[200px] flex items-center justify-center">
+                        <img id="previewImage" class="max-w-full max-h-[400px] object-contain" src="" alt="预览图片" />
+                    </div>
+                </div>
+            </section>
+
+            <!-- HTML上传部分 -->
+            <section class="bg-white rounded-xl shadow-custom p-8 transition-custom hover:shadow-lg">
+                <h2 class="text-2xl font-bold text-secondary mb-6 flex items-center">
+                    <i class="fa fa-code mr-3 text-2xl"></i>HTML文件显示
+                </h2>
+                <div class="space-y-6">
+                    <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                        <label for="htmlUpload" class="cursor-pointer bg-secondary hover:bg-secondary/90 text-white font-medium py-2 px-6 rounded-lg transition-custom flex items-center">
+                            <i class="fa fa-upload mr-2"></i>选择HTML文件
+                        </label>
+                        <input type="file" id="htmlUpload" accept=".html,.htm" class="hidden" />
+                        <span id="htmlFileName" class="text-gray-500 flex-grow"></span>
+                    </div>
+                    <div id="htmlContainer" class="hidden bg-gray-100 rounded-lg p-4 min-h-[300px] border border-gray-200">
+                        <div id="htmlContent" class="prose max-w-none"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CSV上传部分 -->
+            <section class="bg-white rounded-xl shadow-custom p-8 transition-custom hover:shadow-lg">
+                <h2 class="text-2xl font-bold text-accent mb-6 flex items-center">
+                    <i class="fa fa-table mr-3 text-2xl"></i>CSV文件表格显示
+                </h2>
+                <div class="space-y-6">
+                    <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                        <label for="csvUpload" class="cursor-pointer bg-accent hover:bg-accent/90 text-white font-medium py-2 px-6 rounded-lg transition-custom flex items-center">
+                            <i class="fa fa-upload mr-2"></i>选择CSV文件
+                        </label>
+                        <input type="file" id="csvUpload" accept=".csv" class="hidden" />
+                        <span id="csvFileName" class="text-gray-500 flex-grow"></span>
+                    </div>
+                    <div id="csvContainer" class="hidden overflow-x-auto">
+                        <table id="csvTable" class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr id="csvHeader"></tr>
+                            </thead>
+                            <tbody id="csvBody" class="bg-white divide-y divide-gray-200"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 点击坐标部分 -->
+            <section class="bg-white rounded-xl shadow-custom p-8 transition-custom hover:shadow-lg">
+                <h2 class="text-2xl font-bold text-primary mb-6 flex items-center">
+                    <i class="fa fa-mouse-pointer mr-3 text-2xl"></i>点击坐标演示
+                </h2>
+                <div class="space-y-6">
+                    <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                        <div class="flex items-center">
+                            <i class="fa fa-info-circle text-blue-500 mr-2"></i>
+                            <span>点击下方区域查看坐标位置</span>
+                        </div>
+                        <div id="clickInfo" class="bg-gray-100 rounded-lg px-4 py-2 flex-grow">
+                            <span class="text-gray-500">坐标信息将显示在这里</span>
+                        </div>
+                    </div>
+                    <div id="clickArea" class="bg-gradient-to-r from-blue-500 to-indigo-600 h-[200px] rounded-lg cursor-pointer relative overflow-hidden">
+                        <div id="clickMarker" class="hidden absolute w-4 h-4 bg-white rounded-full border-2 border-red-500 -translate-x-1/2 -translate-y-1/2 transform transition-all duration-300"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="mt-16 text-center text-gray-500">
+            <p>© 2025 文件处理演示 | 使用Tailwind CSS构建</p>
+        </footer>
+    </div>
+
+    <script>
+        // 图片上传和预览功能
+        document.getElementById('imageUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            document.getElementById('imageFileName').textContent = file.name;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const imageContainer = document.getElementById('imageContainer');
+                const previewImage = document.getElementById('previewImage');
+
+                previewImage.src = event.target.result;
+                imageContainer.classList.remove('hidden');
+
+                // 添加图片淡入动画
+                previewImage.style.opacity = '0';
+                previewImage.style.transition = 'opacity 0.5s ease-in-out';
+                setTimeout(() => {
+                    previewImage.style.opacity = '1';
+                }, 50);
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // HTML文件上传和显示功能
+        document.getElementById('htmlUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            document.getElementById('htmlFileName').textContent = file.name;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const htmlContainer = document.getElementById('htmlContainer');
+                const htmlContent = document.getElementById('htmlContent');
+
+                htmlContent.innerHTML = event.target.result;
+                htmlContainer.classList.remove('hidden');
+
+                // 添加内容淡入动画
+                htmlContent.style.opacity = '0';
+                htmlContent.style.transition = 'opacity 0.5s ease-in-out';
+                setTimeout(() => {
+                    htmlContent.style.opacity = '1';
+                }, 50);
+            };
+            reader.readAsText(file);
+        });
+
+        // CSV文件上传和表格显示功能
+        document.getElementById('csvUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            document.getElementById('csvFileName').textContent = file.name;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const csvData = event.target.result;
+                const csvContainer = document.getElementById('csvContainer');
+                const csvHeader = document.getElementById('csvHeader');
+                const csvBody = document.getElementById('csvBody');
+
+                // 解析CSV数据
+                const lines = csvData.split('\n');
+                const headers = lines[0].split(',');
+
+                // 清空表格
+                csvHeader.innerHTML = '';
+                csvBody.innerHTML = '';
+
+                // 添加表头
+                headers.forEach(header => {
+                    const th = document.createElement('th');
+                    th.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                    th.textContent = header.trim();
+                    csvHeader.appendChild(th);
+                });
+
+                // 添加表格内容
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i].trim()) continue;
+
+                    const row = document.createElement('tr');
+                    if (i % 2 === 0) {
+                        row.className = 'bg-gray-50';
+                    }
+
+                    const cells = lines[i].split(',');
+                    cells.forEach(cell => {
+                        const td = document.createElement('td');
+                        td.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500';
+                        td.textContent = cell.trim();
+                        row.appendChild(td);
+                    });
+
+                    csvBody.appendChild(row);
+                }
+
+                csvContainer.classList.remove('hidden');
+
+                // 添加表格淡入动画
+                csvContainer.style.opacity = '0';
+                csvContainer.style.transition = 'opacity 0.5s ease-in-out';
+                setTimeout(() => {
+                    csvContainer.style.opacity = '1';
+                }, 50);
+            };
+            reader.readAsText(file);
+        });
+
+        // 点击坐标显示功能
+        document.getElementById('clickArea').addEventListener('click', function(e) {
+            const rect = e.target.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const clickInfo = document.getElementById('clickInfo');
+            const clickMarker = document.getElementById('clickMarker');
+
+            // 更新坐标信息
+            clickInfo.innerHTML = `
+                <span class="text-gray-700 font-medium">X坐标:</span> ${Math.round(x)}px,
+                <span class="text-gray-700 font-medium">Y坐标:</span> ${Math.round(y)}px
+            `;
+
+            // 更新标记位置
+            clickMarker.style.left = `${x}px`;
+            clickMarker.style.top = `${y}px`;
+            clickMarker.classList.remove('hidden');
+
+            // 添加标记动画效果
+            clickMarker.style.transform = `translate(-50%, -50%) scale(1.5)`;
+            clickMarker.style.opacity = '1';
+            setTimeout(() => {
+                clickMarker.style.transform = `translate(-50%, -50%) scale(1)`;
+                clickMarker.style.opacity = '0.8';
+            }, 100);
+        });
+
+        // 为所有文件上传标签添加动画效果
+        document.querySelectorAll('input[type="file"]').forEach(input => {
+            const label = input.previousElementSibling;
+
+            input.addEventListener('focus', () => {
+                label.classList.add('ring-2', 'ring-offset-2', 'ring-primary');
+            });
+
+            input.addEventListener('blur', () => {
+                label.classList.remove('ring-2', 'ring-offset-2', 'ring-primary');
+            });
+        });
+    </script>
+</body>
+</html>
+    
