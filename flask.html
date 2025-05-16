@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课堂签到系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+
+    <!-- Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        dark: '#1f2937',
+                        light: '#f3f4f6'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .hover-scale {
+                transition: transform 0.3s ease;
+            }
+            .hover-scale:hover {
+                transform: scale(1.03);
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <header class="bg-primary text-white shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-clipboard-check text-2xl"></i>
+                <h1 class="text-xl font-bold">课堂签到系统</h1>
+            </div>
+            <nav>
+                <ul class="flex space-x-6">
+                    <li><a href="#generate" class="hover:text-gray-200 transition-colors duration-300">生成签到码</a></li>
+                    <li><a href="#signin" class="hover:text-gray-200 transition-colors duration-300">学生签到</a></li>
+                    <li><a href="#attended" class="hover:text-gray-200 transition-colors duration-300">已签到名单</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <!-- 系统状态卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl p-6 shadow-lg hover-scale card-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">总签到码</p>
+                        <h3 class="text-3xl font-bold text-dark" id="total-codes">100</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <i class="fa fa-key text-primary text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl p-6 shadow-lg hover-scale card-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">已使用</p>
+                        <h3 class="text-3xl font-bold text-warning" id="used-codes">0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center">
+                        <i class="fa fa-check-circle text-warning text-xl"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl p-6 shadow-lg hover-scale card-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">未使用</p>
+                        <h3 class="text-3xl font-bold text-secondary" id="unused-codes">100</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center">
+                        <i class="fa fa-circle text-secondary text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 生成签到码区域 -->
+        <section id="generate" class="mb-12 scroll-mt-20">
+            <div class="bg-white rounded-xl shadow-lg p-6 card-shadow">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-dark flex items-center">
+                        <i class="fa fa-key mr-2 text-primary"></i>生成签到码
+                    </h2>
+                    <button id="regenerate-btn" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
+                        <i class="fa fa-refresh mr-2"></i>重新生成
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white rounded-lg overflow-hidden">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">序号</th>
+                                <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">签到码</th>
+                                <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                                <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="codes-table" class="divide-y divide-gray-200">
+                            <!-- 动态生成的签到码表格 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-6 flex justify-between items-center">
+                    <div class="text-sm text-gray-500">
+                        <span id="showing-codes">显示 1-20 条，共 100 条</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="prev-page" class="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">上一页</button>
+                        <button id="next-page" class="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50">下一页</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 学生签到区域 -->
+        <section id="signin" class="mb-12 scroll-mt-20">
+            <div class="bg-white rounded-xl shadow-lg p-6 card-shadow">
+                <h2 class="text-2xl font-bold text-dark mb-6 flex items-center">
+                    <i class="fa fa-user-plus mr-2 text-primary"></i>学生签到
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-4 text-dark">签到表单</h3>
+                        <form id="signin-form" class="space-y-4">
+                            <div>
+                                <label for="student-id" class="block text-sm font-medium text-gray-700 mb-1">学号</label>
+                                <input type="text" id="student-id" name="student-id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all duration-300" placeholder="请输入学号" required>
+                            </div>
+                            <div>
+                                <label for="signin-code" class="block text-sm font-medium text-gray-700 mb-1">签到码</label>
+                                <input type="text" id="signin-code" name="signin-code" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all duration-300" placeholder="请输入签到码" required>
+                            </div>
+                            <div class="pt-2">
+                                <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg transition-all duration-300 flex items-center justify-center">
+                                    <i class="fa fa-check-circle mr-2"></i>提交签到
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-4 text-dark">签到结果</h3>
+                        <div id="result-container" class="h-60 bg-white rounded-lg p-4 border border-gray-200 overflow-auto">
+                            <p class="text-gray-500 italic">请提交签到信息查看结果...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 已签到学生区域 -->
+        <section id="attended" class="scroll-mt-20">
+            <div class="bg-white rounded-xl shadow-lg p-6 card-shadow">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-dark flex items-center">
+                        <i class="fa fa-list-alt mr-2 text-primary"></i>已签到名单
+                    </h2>
+                    <div class="flex items-center space-x-2">
+                        <div class="relative">
+                            <input type="text" id="search-attended" placeholder="搜索学号" class="pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all duration-300">
+                            <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        </div>
+                        <button id="export-attended" class="bg-secondary hover:bg-secondary/90 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center">
+                            <i class="fa fa-download mr-2"></i>导出
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white rounded-lg overflow-hidden">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">序号</th>
+                                <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">学号</th>
+                                <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">签到时间</th>
+                                <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">签到码</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attended-table" class="divide-y divide-gray-200">
+                            <!-- 动态生成的已签到学生表格 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="no-attended-data" class="py-10 text-center text-gray-500 hidden">
+                    <i class="fa fa-inbox text-4xl mb-3 opacity-30"></i>
+                    <p>暂无签到数据</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <p class="text-sm">&copy; 2025 课堂签到系统 - 版权所有</p>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="#" class="hover:text-primary transition-colors duration-300"><i class="fa fa-question-circle"></i> 帮助</a>
+                    <a href="#" class="hover:text-primary transition-colors duration-300"><i class="fa fa-envelope"></i> 联系我们</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 通知提示框 -->
+    <div id="notification" class="fixed top-4 right-4 max-w-sm bg-white rounded-lg shadow-lg p-4 transform transition-all duration-500 translate-x-full opacity-0 z-50 flex items-start">
+        <div id="notification-icon" class="mr-3 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0">
+            <i class="fa fa-info text-white"></i>
+        </div>
+        <div>
+            <h3 id="notification-title" class="font-medium text-gray-900"></h3>
+            <p id="notification-message" class="text-sm text-gray-500 mt-1"></p>
+        </div>
+        <button id="close-notification" class="ml-auto text-gray-400 hover:text-gray-600">
+            <i class="fa fa-times"></i>
+        </button>
+    </div>
+
+    <script>
+        // 数据存储 - 使用localStorage模拟后端存储
+        const STORAGE_KEY = 'attendance_data';
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化数据
+            initData();
+
+            // 渲染签到码表格
+            renderCodesTable();
+
+            // 渲染已签到学生表格
+            renderAttendedTable();
+
+            // 更新统计数据
+            updateStats();
+
+            // 绑定事件
+            bindEvents();
+        });
+
+        // 初始化数据
+        function initData() {
+            const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+
+            if (!data) {
+                // 生成初始数据
+                const codes = generateCodes(100);
+                const attended = [];
+
+                const newData = {
+                    codes,
+                    attended,
+                    lastGenerated: new Date().toISOString()
+                };
+
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
+            }
+        }
+
+        // 生成随机签到码
+        function generateCodes(count) {
+            const codes = new Set();
+
+            while (codes.size < count) {
+                const code = generateRandomCode(10);
+                codes.add(code);
+            }
+
+            return Array.from(codes).map(code => ({
+                code,
+                used: false,
+                studentId: null,
+                timestamp: null
+            }));
+        }
+
+        // 生成随机字符串
+        function generateRandomCode(length) {
+            const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+
+            for (let i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+
+            return result;
+        }
+
+        // 获取存储的数据
+        function getData() {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        }
+
+        // 保存数据
+        function saveData(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        // 更新统计数据
+        function updateStats() {
+            const { codes } = getData();
+            const usedCount = codes.filter(code => code.used).length;
+            const unusedCount = codes.length - usedCount;
+
+            document.getElementById('total-codes').textContent = codes.length;
+            document.getElementById('used-codes').textContent = usedCount;
+            document.getElementById('unused-codes').textContent = unusedCount;
+        }
+
+        // 渲染签到码表格
+        function renderCodesTable(page = 1, pageSize = 20) {
+            const { codes } = getData();
+            const startIndex = (page - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, codes.length);
+            const currentCodes = codes.slice(startIndex, endIndex);
+
+            const tableBody = document.getElementById('codes-table');
+            tableBody.innerHTML = '';
+
+            currentCodes.forEach((codeObj, index) => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors duration-200';
+
+                const statusClass = codeObj.used
+                    ? 'bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium'
+                    : 'bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium';
+
+                const statusText = codeObj.used ? '已使用' : '未使用';
+
+                row.innerHTML = `
+                    <td class="py-3 px-4">${startIndex + index + 1}</td>
+                    <td class="py-3 px-4 font-mono">${codeObj.code}</td>
+                    <td class="py-3 px-4"><span class="${statusClass}">${statusText}</span></td>
+                    <td class="py-3 px-4">
+                        <button class="copy-code-btn text-primary hover:text-primary/80 text-sm transition-colors duration-300" data-code="${codeObj.code}">
+                            <i class="fa fa-copy mr-1"></i>复制
+                        </button>
+                    </td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+
+            // 更新分页信息
+            document.getElementById('showing-codes').textContent =
+                `显示 ${startIndex + 1}-${endIndex} 条，共 ${codes.length} 条`;
+
+            // 更新分页按钮状态
+            document.getElementById('prev-page').disabled = page === 1;
+            document.getElementById('next-page').disabled = endIndex >= codes.length;
+
+            // 绑定复制按钮事件
+            document.querySelectorAll('.copy-code-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const code = e.currentTarget.getAttribute('data-code');
+                    navigator.clipboard.writeText(code).then(() => {
+                        showNotification('成功', '签到码已复制到剪贴板', 'success');
+                    }).catch(err => {
+                        showNotification('错误', '复制失败，请手动复制', 'error');
+                    });
+                });
+            });
+        }
+
+        // 渲染已签到学生表格
+        function renderAttendedTable() {
+            const { attended } = getData();
+
+            const tableBody = document.getElementById('attended-table');
+            tableBody.innerHTML = '';
+
+            if (attended.length === 0) {
+                document.getElementById('no-attended-data').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('no-attended-data').classList.add('hidden');
+
+            attended.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors duration-200';
+
+                const timestamp = new Date(item.timestamp).toLocaleString();
+
+                row.innerHTML = `
+                    <td class="py-3 px-4">${index + 1}</td>
+                    <td class="py-3 px-4 font-mono">${item.studentId}</td>
+                    <td class="py-3 px-4">${timestamp}</td>
+                    <td class="py-3 px-4 font-mono">${item.code}</td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        // 绑定事件
+        function bindEvents() {
+            // 重新生成签到码按钮
+            document.getElementById('regenerate-btn').addEventListener('click', () => {
+                if (confirm('确定要重新生成签到码吗？已使用的签到码将被重置。')) {
+                    const codes = generateCodes(100);
+                    const data = getData();
+                    data.codes = codes;
+                    data.attended = [];
+                    data.lastGenerated = new Date().toISOString();
+                    saveData(data);
+
+                    renderCodesTable();
+                    renderAttendedTable();
+                    updateStats();
+
+                    showNotification('成功', '已重新生成签到码', 'success');
+                }
+            });
+
+            // 分页按钮
+            document.getElementById('prev-page').addEventListener('click', () => {
+                const currentPage = getCurrentPage();
+                if (currentPage > 1) {
+                    renderCodesTable(currentPage - 1);
+                }
+            });
+
+            document.getElementById('next-page').addEventListener('click', () => {
+                const currentPage = getCurrentPage();
+                const { codes } = getData();
+                const pageSize = 20;
+                const totalPages = Math.ceil(codes.length / pageSize);
+
+                if (currentPage < totalPages) {
+                    renderCodesTable(currentPage + 1);
+                }
+            });
+
+            // 签到表单提交
+            document.getElementById('signin-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const studentId = document.getElementById('student-id').value.trim();
+                const signinCode = document.getElementById('signin-code').value.trim();
+
+                if (!studentId || !signinCode) {
+                    showNotification('错误', '学号和签到码不能为空', 'error');
+                    return;
+                }
+
+                const result = verifySignin(studentId, signinCode);
+                updateResultDisplay(result);
+
+                // 如果签到成功，更新表格和统计
+                if (result.success) {
+                    renderCodesTable();
+                    renderAttendedTable();
+                    updateStats();
+                }
+            });
+
+            // 搜索已签到学生
+            document.getElementById('search-attended').addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                filterAttendedStudents(searchTerm);
+            });
+
+            // 导出已签到学生
+            document.getElementById('export-attended').addEventListener('click', () => {
+                exportAttendedStudents();
+            });
+
+            // 关闭通知
+            document.getElementById('close-notification').addEventListener('click', () => {
+                hideNotification();
+            });
+        }
+
+        // 获取当前页码
+        function getCurrentPage() {
+            const showingText = document.getElementById('showing-codes').textContent;
+            const match = showingText.match(/显示 (\d+)-\d+ 条/);
+            return match ? Math.floor((parseInt(match[1]) - 1) / 20) + 1 : 1;
+        }
+
+        // 验证签到
+        function verifySignin(studentId, signinCode) {
+            const data = getData();
+            const codeObj = data.codes.find(c => c.code === signinCode);
+
+            if (!codeObj) {
+                return {
+                    success: false,
+                    message: '错误：输入的签到码不正确',
+                    type: 'error'
+                };
+            }
+
+            if (codeObj.used) {
+                if (codeObj.studentId === studentId) {
+                    return {
+                        success: false,
+                        message: '你已经签到过了',
+                        type: 'info'
+                    };
+                } else {
+                    return {
+                        success: false,
+                        message: `该签到码已被 ${codeObj.studentId} 使用，不能共享`,
+                        type: 'error'
+                    };
+                }
+            }
+
+            // 标记为已使用
+            codeObj.used = true;
+            codeObj.studentId = studentId;
+            codeObj.timestamp = new Date().toISOString();
+
+            // 添加到已签到列表
+            data.attended.push({
+                studentId,
+                code: signinCode,
+                timestamp: codeObj.timestamp
+            });
+
+            saveData(data);
+
+            return {
+                success: true,
+                message: '签到成功！',
+                type: 'success'
+            };
+        }
+
+        // 更新结果显示
+        function updateResultDisplay(result) {
+            const resultContainer = document.getElementById('result-container');
+            resultContainer.innerHTML = '';
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `p-3 rounded-lg ${result.type === 'success' ? 'bg-green-50 text-green-800' : result.type === 'error' ? 'bg-red-50 text-red-800' : 'bg-blue-50 text-blue-800'}`;
+            messageDiv.innerHTML = `
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fa ${result.type === 'success' ? 'fa-check-circle' : result.type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium">${result.message}</p>
+                    </div>
+                </div>
+            `;
+
+            resultContainer.appendChild(messageDiv);
+
+            // 显示通知
+            showNotification(
+                result.type === 'success' ? '成功' : result.type === 'error' ? '错误' : '信息',
+                result.message,
+                result.type
+            );
+
+            // 滚动到结果区域
+            document.getElementById('signin').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 过滤已签到学生
+        function filterAttendedStudents(searchTerm) {
+            const { attended } = getData();
+
+            if (!searchTerm) {
+                renderAttendedTable();
+                return;
+            }
+
+            const filtered = attended.filter(item =>
+                item.studentId.toLowerCase().includes(searchTerm)
+            );
+
+            const tableBody = document.getElementById('attended-table');
+            tableBody.innerHTML = '';
+
+            if (filtered.length === 0) {
+                document.getElementById('no-attended-data').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('no-attended-data').classList.add('hidden');
+
+            filtered.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 transition-colors duration-200';
+
+                const timestamp = new Date(item.timestamp).toLocaleString();
+
+                row.innerHTML = `
+                    <td class="py-3 px-4">${index + 1}</td>
+                    <td class="py-3 px-4 font-mono">${item.studentId}</td>
+                    <td class="py-3 px-4">${timestamp}</td>
+                    <td class="py-3 px-4 font-mono">${item.code}</td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        // 导出已签到学生
+        function exportAttendedStudents() {
+            const { attended } = getData();
+
+            if (attended.length === 0) {
+                showNotification('提示', '暂无签到数据可导出', 'info');
+                return;
+            }
+
+            const content = attended.map(item => `${item.studentId},${new Date(item.timestamp).toLocaleString()},${item.code}`).join('\n');
+            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `签到名单_${new Date().toLocaleDateString()}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showNotification('成功', '已导出签到名单', 'success');
+        }
+
+        // 显示通知
+        function showNotification(title, message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const notificationTitle = document.getElementById('notification-title');
+            const notificationMessage = document.getElementById('notification-message');
+            const notificationIcon = document.getElementById('notification-icon');
+
+            notificationTitle.textContent = title;
+            notificationMessage.textContent = message;
+
+            // 设置图标和颜色
+            let bgColor, iconClass;
+            switch (type) {
+                case 'success':
+                    bgColor = 'bg-green-500';
+                    iconClass = 'fa-check';
+                    break;
+                case 'error':
+                    bgColor = 'bg-red-500';
+                    iconClass = 'fa-exclamation';
+                    break;
+                case 'warning':
+                    bgColor = 'bg-yellow-500';
+                    iconClass = 'fa-warning';
+                    break;
+                default:
+                    bgColor = 'bg-blue-500';
+                    iconClass = 'fa-info';
+            }
+
+            notificationIcon.className = `mr-3 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${bgColor}`;
+            notificationIcon.innerHTML = `<i class="fa ${iconClass} text-white"></i>`;
+
+            // 显示通知
+            notification.classList.remove('translate-x-full', 'opacity-0');
+            notification.classList.add('translate-x-0', 'opacity-100');
+
+            // 自动关闭
+            clearTimeout(window.notificationTimeout);
+            window.notificationTimeout = setTimeout(hideNotification, 5000);
+        }
+
+        // 隐藏通知
+        function hideNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.remove('translate-x-0', 'opacity-100');
+            notification.classList.add('translate-x-full', 'opacity-0');
+        }
+    </script>
+</body>
+</html>
