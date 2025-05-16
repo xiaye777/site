@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片上传预览</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        dark: '#1E293B',
+                        light: '#F8FAFC'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-custom {
+                transition: all 0.3s ease;
+            }
+            .shadow-custom {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-inter text-dark min-h-screen flex flex-col">
+    <header class="bg-gradient-to-r from-primary to-accent text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold tracking-tight">
+                <i class="fa fa-image mr-3"></i>图片上传预览
+            </h1>
+            <p class="mt-2 text-lg opacity-90">选择本地图片文件并在浏览器中预览</p>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-custom overflow-hidden transition-custom hover:shadow-xl">
+            <div class="p-6 md:p-8">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold mb-3 text-dark">选择图片文件</h2>
+                    <p class="text-gray-600 mb-4">支持 JPG、PNG、GIF 等常见图片格式</p>
+
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center transition-custom hover:border-primary">
+                        <input type="file" id="imageUpload" accept="image/*" class="hidden">
+                        <label for="imageUpload" class="cursor-pointer inline-block bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg transition-custom hover:shadow-lg transform hover:-translate-y-1">
+                            <i class="fa fa-upload mr-2"></i>选择图片文件
+                        </label>
+                        <p class="mt-3 text-gray-500">或拖拽图片到此处</p>
+                    </div>
+                </div>
+
+                <div id="previewContainer" class="hidden mt-8">
+                    <h3 class="text-xl font-semibold mb-3">图片预览</h3>
+                    <div class="bg-gray-100 rounded-lg overflow-hidden shadow-inner p-2">
+                        <img id="imagePreview" src="" alt="预览图片" class="max-w-full h-auto rounded-lg mx-auto transition-all duration-500 opacity-0" onload="this.classList.add('opacity-100');">
+                    </div>
+                    <div id="imageInfo" class="mt-4 p-3 bg-gray-50 rounded-lg hidden">
+                        <p class="font-medium">图片信息</p>
+                        <div class="grid grid-cols-2 gap-2 mt-2 text-sm">
+                            <div><span class="text-gray-500">文件名:</span> <span id="fileName" class="font-medium"></span></div>
+                            <div><span class="text-gray-500">大小:</span> <span id="fileSize" class="font-medium"></span></div>
+                            <div><span class="text-gray-500">类型:</span> <span id="fileType" class="font-medium"></span></div>
+                            <div><span class="text-gray-500">尺寸:</span> <span id="imageDimensions" class="font-medium"></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-dark text-white py-6 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p>&copy; 2025 文件处理演示 | 使用 Tailwind CSS 构建</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const imageUpload = document.getElementById('imageUpload');
+            const previewContainer = document.getElementById('previewContainer');
+            const imagePreview = document.getElementById('imagePreview');
+            const imageInfo = document.getElementById('imageInfo');
+            const fileName = document.getElementById('fileName');
+            const fileSize = document.getElementById('fileSize');
+            const fileType = document.getElementById('fileType');
+            const imageDimensions = document.getElementById('imageDimensions');
+
+            // 监听文件选择
+            imageUpload.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                // 验证文件类型
+                const fileType = file.type;
+                if (!fileType.startsWith('image/')) {
+                    alert('请选择图片文件！');
+                    return;
+                }
+
+                // 显示预览容器
+                previewContainer.classList.remove('hidden');
+
+                // 显示图片
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    imagePreview.src = event.target.result;
+                    imagePreview.onload = function() {
+                        // 获取图片尺寸
+                        imageDimensions.textContent = `${this.naturalWidth} × ${this.naturalHeight} 像素`;
+                        imageInfo.classList.remove('hidden');
+                    };
+                };
+                reader.readAsDataURL(file);
+
+                // 显示文件信息
+                fileName.textContent = file.name;
+                fileSize.textContent = formatFileSize(file.size);
+                fileType.textContent = file.type;
+            });
+
+            // 文件大小格式化
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+        });
+    </script>
+</body>
+</html>
